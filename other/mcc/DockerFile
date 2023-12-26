@@ -1,0 +1,28 @@
+# ----------------------------------
+# Sparked Host Custom Image
+# Image: ghcr.io/sparkedhost/images:mcc
+# ----------------------------------
+
+# Using the .NET official image for .NET 6.0
+FROM mcr.microsoft.com/dotnet/sdk:6.0
+
+LABEL       author="DevOps Team at Sparked Host" maintainer="sysadmin@sparkedhost.com"
+
+# Copy over the script and give it execution permissions
+COPY --chmod=0755 start-latest.sh /opt/start-latest.sh
+
+RUN apt-get update \ 
+    && apt-get install -y jq \
+    && apt-get install -y unzip \
+    && mkdir /opt/data
+
+COPY        --chown=container:container ./../entrypoint.sh /entrypoint.sh
+
+RUN         chmod +x /entrypoint.sh
+USER        container
+ENV         USER=container HOME=/home/container
+
+WORKDIR     /home/container
+
+COPY        ./entrypoint.sh /entrypoint.sh
+CMD         ["/bin/bash", "/entrypoint.sh"]
